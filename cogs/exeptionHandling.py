@@ -13,5 +13,4 @@ class ExeptionHandling(commands.Cog):
             print(error)
 
 def setup(bot):
-    bot.add_cog(ExeptionHandling(bot))
-    
+    bot.add_cog(ExeptionHandling(bot))  
