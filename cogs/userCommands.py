@@ -12,8 +12,11 @@ class UserCommands(commands.Cog):
         emb.add_field(name = "Нарушитель:", value = subject.mention, inline = False)
         emb.add_field(name = "Содержание:", value = sugg, inline = False)
         emb.set_footer(text = inter.author.name, icon_url = inter.author.display_avatar.url)
-        await suggchannel.send(embed = emb)
-        await inter.send(embed = disnake.Embed(description = f"✅ Ваше сообщение было доставлено и будет рассмотрено в скором времени."), delete_after = 10, ephemeral = True)
+        try:
+            await suggchannel.send(embed = emb)
+            await inter.send(embed = disnake.Embed(description = f"✅ Ваше сообщение было доставлено и будет рассмотрено в скором времени."), delete_after = 10, ephemeral = True)
+        except Exception as e:
+            await inter.send(embed = disnake.Embed(description = f"❌ Ваше сообщение не было доставлено."), delete_after = 10, ephemeral = True)
 
 def setup(bot):
     bot.add_cog(UserCommands(bot))
