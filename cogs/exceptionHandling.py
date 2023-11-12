@@ -1,7 +1,7 @@
 import disnake
 from disnake.ext import commands
 
-class ExeptionHandling(commands.Cog):
+class ExceptionHandling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -23,4 +23,4 @@ class ExeptionHandling(commands.Cog):
         await ctx.message.delete(delay = 5)
 
 def setup(bot):
-    bot.add_cog(ExeptionHandling(bot))  
+    bot.add_cog(ExceptionHandling(bot))  
