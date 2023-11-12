@@ -7,17 +7,26 @@ class TempChannels(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        if after.channel != None:
-            if after.channel.id == 756607939137110127:
-                for guild in self.bot.guilds:
-                    maincategory = disnake.utils.get(guild.categories, id = 756607938566815904)
-                    newchannel = await guild.create_voice_channel(name = f"{member.display_name}\'s channel", category = maincategory)
-                    await newchannel.set_permissions(member, connect = True, move_members = True, manage_channels = True)
-                    await member.move_to(newchannel)
-                    def check(x, y, z):
-                        return len(newchannel.members) == 0
-                    await self.bot.wait_for("voice_state_update", check = check)
-                    await newchannel.delete()
+        
+        if after.channel != None and after.channel.id == 756607939137110127:
+            guild = after.channel.guild
+            maincategory = disnake.utils.get(guild.categories, id = after.channel.category_id)
+            newchannel = await guild.create_voice_channel(name = f"{member.display_name}\'s channel", category = maincategory)
+            await newchannel.set_permissions(member, connect = True, move_members = True, manage_channels = True)
+            try:
+                await member.move_to(newchannel)
 
+                self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({newchannel.id}, {guild.id})")
+                self.bot.db_connection.commit()
+            except:
+                await newchannel.delete()
+
+        if before.channel != None and before.channel.guild.get_channel(before.channel.id):
+            if self.bot.db_cursor.execute(f"SELECT channel_id FROM temp_channels_{before.channel.guild.id} WHERE channel_id = {before.channel.id}").fetchone() != None:
+                if len(before.channel.members) == 0:
+                    self.bot.db_cursor.execute(f"DELETE FROM temp_channels_{before.channel.guild.id} WHERE channel_id = {before.channel.id};")
+                    self.bot.db_connection.commit()
+                    await before.channel.delete()
+        
 def setup(bot):
     bot.add_cog(TempChannels(bot))
