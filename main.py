@@ -10,8 +10,8 @@ keep_alive()
 bot = commands.Bot(command_prefix ='meow/', help_command = None, intents = disnake.Intents.all())
 
 #Подключение к БД
-connection = sqlite3.connect('tyan.db')
-bot.db_cursor = connection.cursor()
+bot.db_connection = sqlite3.connect('tyan.db')
+bot.db_cursor = bot.db_connection.cursor()
 
 # Загрузка когов
 if os.path.isdir("cogs"):
