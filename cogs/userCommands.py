@@ -15,7 +15,7 @@ class UserCommands(commands.Cog):
         try:
             await suggchannel.send(embed = emb)
             await inter.send(embed = disnake.Embed(description = f"✅ Ваше сообщение было доставлено и будет рассмотрено в скором времени."), delete_after = 10, ephemeral = True)
-        except Exception as e:
+        except:
             await inter.send(embed = disnake.Embed(description = f"❌ Ваше сообщение не было доставлено."), delete_after = 10, ephemeral = True)
 
 def setup(bot):

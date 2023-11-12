@@ -5,4 +5,3 @@ poetry.lock
 pyproject.toml
 .replit
 *.db
-*.db-journal
