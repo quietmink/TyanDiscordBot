@@ -17,7 +17,7 @@ class TempChannels(commands.Cog):
                 try:
                     await member.move_to(newchannel)
 
-                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({newchannel.id}, {guild.id})")
+                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({newchannel.id})")
                     self.bot.db_connection.commit()
                 except:
                     await newchannel.delete()
