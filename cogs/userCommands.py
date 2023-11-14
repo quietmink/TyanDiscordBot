@@ -23,8 +23,9 @@ class UserCommands(commands.Cog):
                 delete_after = 10, 
                 ephemeral = True
                 )
-        except:
+        except Exception as e:
             await inter.send(embed = disnake.Embed(description = f"❌ Ваше сообщение не было доставлено."), delete_after = 10, ephemeral = True)
+            print(e)
 
 def setup(bot):
     bot.add_cog(UserCommands(bot))

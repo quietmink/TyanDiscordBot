@@ -13,8 +13,9 @@ class LoadingModules(commands.Cog):
             try:
                 self.bot.load_extension(f"cogs.{cog_name}")
                 await ctx.send(embed = disnake.Embed(description = f"✅ Модуль успешно загружен."), delete_after = 5)
-            except:
+            except Exception as e:
                 await ctx.send(embed = disnake.Embed(description = f"❌ Ошибка загрузки модуля."), delete_after = 5)
+                print(e)
         else:
             await ctx.send(embed = disnake.Embed(description = f"❌ Модуль не найден."), delete_after = 5)
         await ctx.message.delete(delay = 5)
@@ -25,8 +26,9 @@ class LoadingModules(commands.Cog):
         try:
             self.bot.unload_extension(f"cogs.{cog_name}")
             await ctx.send(embed = disnake.Embed(description = f"✅ Модуль успешно выгружен."), delete_after = 5)
-        except:
+        except Exception as e:
             await ctx.send(embed = disnake.Embed(description = f"❌ Ошибка выгрузки модуля."), delete_after = 5)
+            print(e)
         await ctx.message.delete(delay = 5)
 
 def setup(bot):
