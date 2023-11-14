@@ -66,11 +66,12 @@ def insertionServer(self, guild):
         );
 
         CREATE TABLE IF NOT EXISTS permanent_channels_{guild.id} (
+            member_id INT,
             channel_id INT
         );
     """)
     self.bot.db_connection.commit()
-    
+# Удаление сервера из БД
 def dropServer(self, guild_id):
     self.bot.db_cursor.executescript(f"""
         DROP TABLE temp_channels_{guild_id};

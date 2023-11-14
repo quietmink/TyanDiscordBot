@@ -5,8 +5,8 @@ class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.slash_command(description = "Создание жалобы.", required = True)
-    async def report(self, inter, subject: disnake.Member =  commands.Param(name = "subject", description = "Нарушитель."), sugg: str = commands.Param(description = "Содержание жалобы.")):
+    @commands.slash_command(description = "Создание жалобы.")
+    async def report(self, inter, subject: disnake.Member = commands.Param(name = "subject", description = "Нарушитель."), sugg: str = commands.Param(description = "Содержание жалобы.")):
         suggchannel = self.bot.get_channel(647855647622168576)
         emb = disnake.Embed(title = "👺 Новая жалоба.", color = 0xc20000, timestamp = inter.created_at)
         emb.add_field(name = "Нарушитель:", value = subject.mention, inline = False)

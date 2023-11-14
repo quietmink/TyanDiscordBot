@@ -11,16 +11,16 @@ class TempChannels(commands.Cog):
         if after.channel != None and after.channel.id == 756607939137110127:
             try:
                 guild = after.channel.guild
-                maincategory = disnake.utils.get(guild.categories, id = after.channel.category_id)
-                newchannel = await guild.create_voice_channel(name = f"{member.display_name}\'s channel", category = maincategory)
-                await newchannel.set_permissions(member, connect = True, move_members = True, manage_channels = True)
+                tempcategory = disnake.utils.get(guild.categories, id = after.channel.category_id)
+                tempchannel = await guild.create_voice_channel(name = f"{member.display_name}\'s channel", category = tempcategory)
+                await tempchannel.set_permissions(member, connect = True, move_members = True, manage_channels = True)
                 try:
-                    await member.move_to(newchannel)
+                    await member.move_to(tempchannel)
 
-                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({newchannel.id})")
+                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({tempchannel.id})")
                     self.bot.db_connection.commit()
                 except:
-                    await newchannel.delete()
+                    await tempchannel.delete()
             except Exception as e:
                 print(e)
 
