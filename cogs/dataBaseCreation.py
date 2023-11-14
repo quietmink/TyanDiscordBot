@@ -64,12 +64,17 @@ def insertionServer(self, guild):
         CREATE TABLE IF NOT EXISTS temp_channels_{guild.id} (
             channel_id INT
         );
+
+        CREATE TABLE IF NOT EXISTS permanent_channels_{guild.id} (
+            channel_id INT
+        );
     """)
     self.bot.db_connection.commit()
     
 def dropServer(self, guild_id):
     self.bot.db_cursor.executescript(f"""
         DROP TABLE temp_channels_{guild_id};
+        DROP TABLE permanent_channels_{guild_id};
         DELETE FROM servers WHERE server_id = {guild_id};
     """)
     self.bot.db_connection.commit()
