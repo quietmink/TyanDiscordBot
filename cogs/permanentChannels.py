@@ -6,6 +6,7 @@ class PermanentChannels(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(description = "Создание приватной комнаты.")
+    @commands.has_role(798228559675916350)
     async def cpc(self, 
                   inter, 
                   access: bool = commands.Param(name = "lock", 
