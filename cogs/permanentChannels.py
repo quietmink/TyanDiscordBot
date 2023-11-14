@@ -52,39 +52,42 @@ class PermanentChannels(commands.Cog):
     @commands.slash_command(description = "Удаление текущей приватной комнаты.")
     @commands.has_role(798228559675916350)
     async def dpc(self, inter):        
-        permchannel_id = self.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()[1]
-        if permchannel_id != None:
+        permchannelquery = self.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()
+        if permchannelquery != None:
             # Подтверждение удаления
             emb = disnake.Embed(description = "📛 Вы действительно хотите свою приватную комнату?")
             emb.set_footer(text = "Все настройки будут стёрты!")
             yes_button = disnake.ui.Button(style = disnake.ButtonStyle.green, label = "Да", custom_id = "yes_button")
             no_button = disnake.ui.Button(style = disnake.ButtonStyle.red, label = "Нет", custom_id = "no_button")
-
             await inter.send(embed = emb, ephemeral = True, components = [yes_button, no_button])
+            try:
+                interaction = await self.bot.wait_for("button_click", timeout = 20)
 
-            interaction = await self.bot.wait_for("button_click", timeout = 20)
-            if interaction.component.custom_id == "no_button": 
-                return
-            elif interaction.component.custom_id == "yes_button":
-                try:
-                    # Удаление приватной комнаты на сервере
-                    await disnake.utils.get(inter.guild.channels, id = permchannel_id).delete()
+                if interaction.component.custom_id == "no_button": 
+                    return
+                elif interaction.component.custom_id == "yes_button":
+                    try:
+                        # Удаление приватной комнаты на сервере
+                        await disnake.utils.get(inter.guild.channels, id = permchannelquery[1]).delete()
 
-                    # Удаление приватной комнаты из БД
-                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{inter.guild.id} WHERE channel_id = {permchannel_id};")
-                    self.bot.db_connection.commit()
+                        # Удаление приватной комнаты из БД
+                        self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{inter.guild.id} WHERE channel_id = {permchannelquery[1]};")
+                        self.bot.db_connection.commit()
 
-                    await inter.send(
-                        embed = disnake.Embed(description = f"✅ Приватная комната успешно удалена."), 
-                        delete_after = 5, 
-                        ephemeral = True)
-                except Exception as e:
-                    await inter.send(
-                        embed = disnake.Embed(description = f"❌ Ошибка удаления приватной комнаты."), 
-                        delete_after = 5, 
-                        ephemeral = True)
-                    print(e)
-            await inter.delete_original_response()
+                        await inter.send(
+                            embed = disnake.Embed(description = f"✅ Приватная комната успешно удалена."), 
+                            delete_after = 5, 
+                            ephemeral = True)
+                    except Exception as e:
+                        await inter.send(
+                            embed = disnake.Embed(description = f"❌ Ошибка удаления приватной комнаты."), 
+                            delete_after = 5, 
+                            ephemeral = True)
+                        print(e)
+            except Exception as e:
+                print (e)
+            finally:
+                await inter.delete_original_response()
         else:
             await inter.send(
                 embed = disnake.Embed(description = f"❌ Приватная комната ещё не создана."), 
