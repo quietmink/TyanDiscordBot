@@ -8,8 +8,13 @@ class PermanentChannels(commands.Cog):
     @commands.slash_command(description = "Создание приватной комнаты.")
     async def cpc(self, 
                   inter, 
-                  access: bool = commands.Param(name = "lock", choices = [True, False], description = "Первичная настройка доступа.", default = False),
-                  name: str = commands.Param(name = "name", description = "Название.", default = lambda inter: inter.author.display_name + "\'s channel")):
+                  access: bool = commands.Param(name = "lock", 
+                                                choices = [True, False], 
+                                                description = "Первичная настройка доступа.", 
+                                                default = False),
+                  name: str = commands.Param(name = "name", 
+                                             description = "Название.", 
+                                             default = lambda inter: inter.author.display_name + "\'s channel")):
         
         if self.bot.db_cursor.execute(f"SELECT member_id FROM permanent_channels_{inter.author.guild.id} WHERE member_id = {inter.author.id}").fetchone() == None:
             try:
@@ -27,11 +32,20 @@ class PermanentChannels(commands.Cog):
                 self.bot.db_cursor.execute(f"INSERT INTO permanent_channels_{inter.author.guild.id} VALUES ({inter.author.id}, {permchannel.id})")
                 self.bot.db_connection.commit()
                 
-                await inter.send(embed = disnake.Embed(description = f"✅ Приватная комната была создана."), delete_after = 10, ephemeral = True)
+                await inter.send(
+                    embed = disnake.Embed(description = f"✅ Приватная комната была создана."), 
+                    delete_after = 10, 
+                    ephemeral = True)
             except:
-                await inter.send(embed = disnake.Embed(description = f"❌ Ошибка создания приватной комнаты."), delete_after = 10, ephemeral = True)
+                await inter.send(
+                    embed = disnake.Embed(description = f"❌ Ошибка создания приватной комнаты."), 
+                    delete_after = 10, 
+                    ephemeral = True)
         else:
-            await inter.send(embed = disnake.Embed(description = f"❌ Превышен лимит приватных комнат."), delete_after = 10, ephemeral = True)
+            await inter.send(
+                embed = disnake.Embed(description = f"❌ Превышен лимит приватных комнат."), 
+                delete_after = 10, 
+                ephemeral = True)
 
 def setup(bot):
     bot.add_cog(PermanentChannels(bot))
