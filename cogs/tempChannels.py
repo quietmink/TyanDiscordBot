@@ -13,7 +13,7 @@ class TempChannels(commands.Cog):
                 guild = after.channel.guild
                 tempcategory = disnake.utils.get(guild.categories, id = after.channel.category_id)
                 tempchannel = await guild.create_voice_channel(name = f"{member.display_name}\'s channel", category = tempcategory)
-                await tempchannel.set_permissions(member, connect = True, move_members = True, manage_channels = True)
+                await tempchannel.set_permissions(member, connect = True, manage_channels = True)
                 try:
                     await member.move_to(tempchannel)
 

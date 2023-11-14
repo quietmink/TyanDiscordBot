@@ -66,7 +66,7 @@ def insertionServer(self, guild):
         );
 
         CREATE TABLE IF NOT EXISTS permanent_channels_{guild.id} (
-            member_id INT,
+            member_id INT PRIMARY KEY,
             channel_id INT
         );
     """)
