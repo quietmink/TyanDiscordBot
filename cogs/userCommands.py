@@ -11,7 +11,7 @@ class UserCommands(commands.Cog):
                      subject: disnake.Member = commands.Param(name = "subject", description = "Нарушитель."), 
                      sugg: str = commands.Param(description = "Содержание жалобы.")):
         
-        suggchannel = self.bot.get_channel(647855647622168576)
+        suggchannel = self.bot.get_channel(1174425267947700275)
         emb = disnake.Embed(title = "👺 Новая жалоба.", color = 0xc20000, timestamp = inter.created_at)
         emb.add_field(name = "Нарушитель:", value = subject.mention, inline = False)
         emb.add_field(name = "Содержание:", value = sugg, inline = False)

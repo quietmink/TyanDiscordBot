@@ -17,7 +17,7 @@ class PermanentChannels(commands.Cog):
                                              default = lambda inter: inter.author.display_name + "\'s channel")):
         
         # Проверка на присутствие роли бустера
-        premium_role = inter.guild.get_role(763079486743904316)
+        premium_role = inter.guild.get_role(798228559675916350)
         if not premium_role in inter.author.roles: raise commands.MissingRole(premium_role)
         
         # Проверка на существование канала
@@ -57,7 +57,7 @@ class PermanentChannels(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         removed_roles = set(before.roles) - set(after.roles)
-        if before.guild.get_role(763079486743904316) in removed_roles:
+        if before.guild.get_role(798228559675916350) in removed_roles:
             permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{before.guild.id} WHERE member_id = {before.id}").fetchone()
             if permquery != None:
                 try:

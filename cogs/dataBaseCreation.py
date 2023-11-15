@@ -28,7 +28,7 @@ class DataBaseCreation(commands.Cog):
                 perm_channels = self.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{guild.id}").fetchall()
                 
                 for channelquery in perm_channels:
-                    if not guild.get_role(763079486743904316) in guild.get_member(channelquery[0]).roles:
+                    if not guild.get_role(798228559675916350) in guild.get_member(channelquery[0]).roles:
                         await guild.get_channel(channelquery[1]).delete()
                         self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{guild.id} WHERE channel_id = {channelquery[1]};")
 
