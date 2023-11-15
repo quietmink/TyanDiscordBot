@@ -1,3 +1,4 @@
+import disnake
 from disnake.ext import commands
 
 class DataBaseCreation(commands.Cog):
@@ -23,11 +24,16 @@ class DataBaseCreation(commands.Cog):
         # Удаление пустых временных каналов, оставшихся в БД
         try:
             for guild in self.bot.guilds:
-
-                temp_channels = self.bot.db_cursor.execute(f"SELECT channel_id FROM temp_channels_{guild.id};").fetchall()
+                temp_channels = self.bot.db_cursor.execute(f"SELECT channel_id FROM temp_channels_{guild.id}").fetchall()
+                perm_channels = self.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{guild.id}").fetchall()
+                
+                for channelquery in perm_channels:
+                    if not guild.get_role(763079486743904316) in guild.get_member(channelquery[0]).roles:
+                        await guild.get_channel(channelquery[1]).delete()
+                        self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{guild.id} WHERE channel_id = {channelquery[1]};")
 
                 for channel_id in temp_channels:
-                    channel = guild.get_channel(channel_id[0])
+                    channel = guild.get_channel(channel_id)
                     if channel and len(channel.members) == 0:
                         await channel.delete()
                         self.bot.db_cursor.execute(f"DELETE FROM temp_channels_{guild.id} WHERE channel_id = {channel_id[0]};")

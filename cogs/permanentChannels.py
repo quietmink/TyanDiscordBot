@@ -17,7 +17,7 @@ class PermanentChannels(commands.Cog):
                                              default = lambda inter: inter.author.display_name + "\'s channel")):
         
         # Проверка на присутствие роли бустера
-        premium_role = inter.guild.premium_subscriber_role
+        premium_role = inter.guild.get_role(763079486743904316)
         if not premium_role in inter.author.roles: raise commands.MissingRole(premium_role)
         
         # Проверка на существование канала
@@ -57,15 +57,26 @@ class PermanentChannels(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         removed_roles = set(before.roles) - set(after.roles)
-        if before.guild.premium_subscriber_role in removed_roles:
+        if before.guild.get_role(763079486743904316) in removed_roles:
             permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{before.guild.id} WHERE member_id = {before.id}").fetchone()
             if permquery != None:
                 try:
-                    await disnake.utils.get(before.guild.channels, id = permquery[0]).delete()
-                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{before.guild.id} WHERE channel_id = {permquery[0]};")
+                    channel = before.guild.get_channel(permquery[0])
+                    if channel: await channel.delete()
+                    
+                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{before.guild.id} WHERE channel_id = {permquery[0]}")
                     self.bot.db_connection.commit()
                 except Exception as e:
                     print(e)                                
     
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{member.guild.id} WHERE member_id = {member.id}").fetchone()
+        if  permquery != None:
+            channel = member.guild.get_channel(permquery[0])
+            if channel: await channel.delete()
+            self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{member.guild.id} WHERE member_id = {member.id}")
+            self.bot.db_connection.commit()
+            
 def setup(bot):
     bot.add_cog(PermanentChannels(bot))
