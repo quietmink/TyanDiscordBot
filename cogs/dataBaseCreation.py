@@ -20,7 +20,7 @@ class DataBaseCreation(commands.Cog):
             if self.bot.db_cursor.execute(f"SELECT server_id FROM servers WHERE server_id = {guild.id}").fetchone() == None:
                 insertionServer(self, guild)
     
-        # Удаление пустых каналов, оставшихся в БД
+        # Удаление пустых временных каналов, оставшихся в БД
         try:
             for guild in self.bot.guilds:
 
@@ -35,7 +35,7 @@ class DataBaseCreation(commands.Cog):
         except Exception as e:
             print(e)
 
-        # Удаление серверов, в которых бот уже не состоит
+        # Удаление серверов из БД, в которых бот уже не состоит
         try:
             all_server = self.bot.db_cursor.execute("SELECT server_id FROM servers;").fetchall()
 

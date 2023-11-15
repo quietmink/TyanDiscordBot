@@ -6,7 +6,6 @@ class PermanentChannels(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(description = "Создание приватной комнаты.")
-    @commands.has_role(763079486743904316)
     async def cpc(self, 
                   inter, 
                   access: bool = commands.Param(name = "lock", 
@@ -17,6 +16,11 @@ class PermanentChannels(commands.Cog):
                                              description = "Название.", 
                                              default = lambda inter: inter.author.display_name + "\'s channel")):
         
+        # Проверка на присутствие роли бустера
+        premium_role = inter.guild.premium_subscriber_role
+        if not premium_role in inter.author.roles: raise commands.MissingRole(premium_role)
+        
+        # Проверка на существование канала
         permquery = self.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()
         if permquery == None or disnake.utils.get(inter.guild.channels, id = permquery[1]) == None:
             try:
@@ -49,6 +53,19 @@ class PermanentChannels(commands.Cog):
                 embed = disnake.Embed(description = f"❌ Приватная комната уже существует."), 
                 delete_after = 5, 
                 ephemeral = True)             
-
+            
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        removed_roles = set(before.roles) - set(after.roles)
+        if before.guild.premium_subscriber_role in removed_roles:
+            permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{before.guild.id} WHERE member_id = {before.id}").fetchone()
+            if permquery != None:
+                try:
+                    await disnake.utils.get(before.guild.channels, id = permquery[0]).delete()
+                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{before.guild.id} WHERE channel_id = {permquery[0]};")
+                    self.bot.db_connection.commit()
+                except Exception as e:
+                    print(e)                                
+    
 def setup(bot):
     bot.add_cog(PermanentChannels(bot))
