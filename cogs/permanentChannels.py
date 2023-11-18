@@ -14,6 +14,12 @@ class Dropdown(disnake.ui.StringSelect):
             disnake.SelectOption(
                 label = "Закрыть", emoji = "📪", value = "close"
             ),
+            disnake.SelectOption(
+                label = "Добавить/Удалить участника из черного списка", emoji = "👹", value = "set_bl"
+            ),
+            disnake.SelectOption(
+                label = "Просмотреть черный список", emoji = "🚷", value = "print_bl"
+            ),
         ]
 
         super().__init__(
@@ -24,14 +30,16 @@ class Dropdown(disnake.ui.StringSelect):
         )
 
     async def callback(self, inter: disnake.MessageInteraction):
+        permquery = inter.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()
+        member_role = disnake.utils.get(inter.guild.roles, id = 1167532972212240516)
         if self.values[0] == "create":
             # Проверка на существование канала
-            permquery = inter.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()
             if permquery == None or disnake.utils.get(inter.guild.channels, id = permquery[1]) == None:
                 emb = disnake.Embed(description = "📛 Выберите предустановку доступа к комнате.")
                 emb.set_footer(text = "Данную настройку можно изменить после создания.")
                 open_button = disnake.ui.Button(style = disnake.ButtonStyle.green, label = "Открытая", custom_id = "open")
                 close_button = disnake.ui.Button(style = disnake.ButtonStyle.red, label = "Закрытая", custom_id = "close")
+                
                 await inter.response.edit_message(embed = emb,  components = [open_button, close_button])
 
                 try:
@@ -42,7 +50,7 @@ class Dropdown(disnake.ui.StringSelect):
                     if interaction.component.custom_id == "open": access = True
                     else: access = False
                     overwrites = {
-                        disnake.utils.get(inter.guild.roles, id = 1167532972212240516): disnake.PermissionOverwrite(connect = access),
+                        member_role: disnake.PermissionOverwrite(connect = access),
                         inter.author: disnake.PermissionOverwrite(connect = True, manage_channels = True)
                     }
 
@@ -54,15 +62,50 @@ class Dropdown(disnake.ui.StringSelect):
                     inter.bot.db_connection.commit()
                     
                     await inter.edit_original_response(embed = disnake.Embed(description = f"✅ Приватная комната успешно создана."), components = None)
+                
                 except Exception as e:
                     await inter.edit_original_response(embed = disnake.Embed(description = f"❌ Ошибка создания приватной комнаты."), components = None)
                     print(e)
+            
             else:
                 await inter.response.edit_message(embed = disnake.Embed(description = f"❌ Приватная комната уже существует."), components = None)
-        elif self.values[0] == "open":
-            pass
-        elif self.values[0] == "close":
-            pass
+
+        elif permquery != None and disnake.utils.get(inter.guild.channels, id = permquery[1]) != None:
+            channel_object = disnake.utils.get(inter.guild.channels, id = permquery[1])
+            try:
+                # Открытие канала
+                if self.values[0] == "open":
+                    for overwrite in channel_object.overwrites:
+                        if overwrite != inter.author and not channel_object.permissions_for(overwrite).connect:
+                            await channel_object.set_permissions(target = overwrite, overwrite = None)
+
+                # Закрытие канала
+                if self.values[0] == "close":
+                    await channel_object.set_permissions(
+                        overwrite = disnake.PermissionOverwrite(connect = False),
+                        target = member_role
+                    )
+                    for member in channel_object.members:
+                        await channel_object.set_permissions(
+                            overwrite = disnake.PermissionOverwrite(connect = True),
+                            target = member
+                        )
+                
+                # Добавление/Удаление участника из черного списка
+                if self.values[0] == "set_bl":
+                    pass
+
+                # Вывод черного списка
+                if self.values[0] == "print_bl":
+                    pass
+                
+                await inter.response.edit_message(embed = disnake.Embed(description = f"✅ Параметры доступа приватной комнаты успешно изменены."), components = None)
+            
+            except Exception as e:
+                await inter.response.edit_message(embed = disnake.Embed(description = f"❌ Ошибка изменения параметров доступа комнаты."), components = None)
+                print(e)
+        else:
+            await inter.response.edit_message(embed = disnake.Embed(description = f"❌ Приватная комната ещё не создана."), components = None)
         await inter.delete_original_response(delay = 3)
 
 class PermanentChannels(commands.Cog):
@@ -77,6 +120,7 @@ class PermanentChannels(commands.Cog):
 
         view = disnake.ui.View()
         view.add_item(Dropdown())
+        
         await inter.send(view = view, ephemeral = True)         
             
     @commands.Cog.listener()
