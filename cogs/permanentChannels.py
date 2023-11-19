@@ -16,6 +16,8 @@ class DropdownBlackList(disnake.ui.UserSelect):
             if self.values[0] != inter.author:
                 if self.channel_object.permissions_for(self.values[0]).connect or not self.values[0] in self.channel_object.overwrites:
                     await self.channel_object.set_permissions(target = self.values[0], overwrite = disnake.PermissionOverwrite(connect = False))
+                    if self.values[0] in self.channel_object.members:
+                        await self.values[0].move_to(None)
                     await inter.response.edit_message(embed = disnake.Embed(description = f"✅ Пользователь успешно добавлен в черный список."), components = None)
                 else:
                     await self.channel_object.set_permissions(target = self.values[0], overwrite = None)
