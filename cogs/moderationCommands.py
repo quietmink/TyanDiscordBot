@@ -17,7 +17,7 @@ class ModerationCommands(commands.Cog):
                 await inter.edit_original_response(embed = disnake.Embed(description = "❌ Сообщения не были удалены."))
                 print(e)
             finally:
-                await inter.delete_original_response(delay = 5)
+                await inter.delete_original_response(delay = 3)
 
 
 
