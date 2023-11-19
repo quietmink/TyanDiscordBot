@@ -55,7 +55,7 @@ class DropdownPermanentMenu(disnake.ui.StringSelect):
         )
 
     async def callback(self, inter: disnake.MessageInteraction):
-        permquery = inter.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels_{inter.guild.id} WHERE member_id = {inter.author.id}").fetchone()
+        permquery = inter.bot.db_cursor.execute(f"SELECT member_id, channel_id FROM permanent_channels WHERE member_id = {inter.author.id}").fetchone()
         member_role = disnake.utils.get(inter.guild.roles, id = 1167532972212240516)
         if self.values[0] == "create":
             # Проверка на существование канала для его создания
@@ -83,7 +83,7 @@ class DropdownPermanentMenu(disnake.ui.StringSelect):
                     permchannel = await inter.guild.create_voice_channel(name = f"{inter.author.display_name}\'s channel", category = permcategory, overwrites = overwrites)
                     
                     # Добавление канала в БД
-                    inter.bot.db_cursor.execute(f"INSERT OR REPLACE INTO permanent_channels_{inter.guild.id} VALUES ({inter.author.id}, {permchannel.id})")
+                    inter.bot.db_cursor.execute(f"INSERT OR REPLACE INTO permanent_channels VALUES ({inter.author.id}, {permchannel.id})")
                     inter.bot.db_connection.commit()
                     
                     await inter.edit_original_response(embed = disnake.Embed(description = f"✅ Приватная комната успешно создана."), components = None)
@@ -102,7 +102,7 @@ class DropdownPermanentMenu(disnake.ui.StringSelect):
                 # Открытие канала
                 if self.values[0] == "open":
                     for overwrite in channel_object.overwrites:
-                        if overwrite != inter.author and channel_object.permissions_for(overwrite).connect:
+                        if overwrite != inter.author and not isinstance(overwrite, disnake.Member):
                             await channel_object.set_permissions(target = overwrite, overwrite = None)
 
                 # Закрытие канала
@@ -164,24 +164,24 @@ class PermanentChannels(commands.Cog):
     async def on_member_update(self, before, after):
         removed_roles = set(before.roles) - set(after.roles)
         if before.guild.get_role(798228559675916350) in removed_roles:
-            permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{before.guild.id} WHERE member_id = {before.id}").fetchone()
+            permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels WHERE member_id = {before.id}").fetchone()
             if permquery != None:
                 try:
                     channel = before.guild.get_channel(permquery[0])
                     if channel: await channel.delete()
                     
-                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{before.guild.id} WHERE channel_id = {permquery[0]}")
+                    self.bot.db_cursor.execute(f"DELETE FROM permanent_channels WHERE channel_id = {permquery[0]}")
                     self.bot.db_connection.commit()
                 except Exception as e:
                     print(e)                                
     
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels_{member.guild.id} WHERE member_id = {member.id}").fetchone()
+        permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels WHERE member_id = {member.id}").fetchone()
         if  permquery != None:
             channel = member.guild.get_channel(permquery[0])
             if channel: await channel.delete()
-            self.bot.db_cursor.execute(f"DELETE FROM permanent_channels_{member.guild.id} WHERE member_id = {member.id}")
+            self.bot.db_cursor.execute(f"DELETE FROM permanent_channels WHERE member_id = {member.id}")
             self.bot.db_connection.commit()
             
 def setup(bot):

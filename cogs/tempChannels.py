@@ -18,7 +18,7 @@ class TempChannels(commands.Cog):
                 try:
                     await member.move_to(tempchannel)
 
-                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels_{guild.id} VALUES ({tempchannel.id})")
+                    self.bot.db_cursor.execute(f"INSERT INTO temp_channels VALUES ({tempchannel.id})")
                     self.bot.db_connection.commit()
                 except:
                     await tempchannel.delete()
@@ -27,10 +27,10 @@ class TempChannels(commands.Cog):
 
         # Удаление временного канала
         if before.channel != None:
-            if self.bot.db_cursor.execute(f"SELECT channel_id FROM temp_channels_{before.channel.guild.id} WHERE channel_id = {before.channel.id}").fetchone() != None:
-                if len(before.channel.members) == 0 and before.channel.guild.get_channel(before.channel.id):
+            if self.bot.db_cursor.execute(f"SELECT channel_id FROM temp_channels WHERE channel_id = {before.channel.id}").fetchone() != None and len(before.channel.members) == 0:
+                if before.channel.guild.get_channel(before.channel.id):
                     await before.channel.delete()
-                self.bot.db_cursor.execute(f"DELETE FROM temp_channels_{before.channel.guild.id} WHERE channel_id = {before.channel.id}")
+                self.bot.db_cursor.execute(f"DELETE FROM temp_channels WHERE channel_id = {before.channel.id}")
                 self.bot.db_connection.commit()
         
 def setup(bot):
