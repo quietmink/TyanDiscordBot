@@ -3,17 +3,14 @@ from disnake.ext import commands
 import os
 import sqlite3
 
-# Поддержка работы
-from keep_alive import keep_alive
-keep_alive()
-
+# Инициализация объекта бота
 bot = commands.Bot(
     command_prefix ='meow/', 
     help_command = None, 
     intents = disnake.Intents.all()
     )
 
-#Подключение к БД
+# Подключение к БД
 try:
     bot.db_connection = sqlite3.connect('tyan.db')
     bot.db_cursor = bot.db_connection.cursor()
