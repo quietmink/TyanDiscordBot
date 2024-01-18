@@ -3,6 +3,9 @@ from disnake.ext import commands
 import os
 import sqlite3
 
+from keep_alive import keep_alive
+keep_alive()
+
 # Инициализация объекта бота
 bot = commands.Bot(
     command_prefix ='meow/', 
