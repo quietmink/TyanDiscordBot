@@ -152,11 +152,8 @@ class PermanentChannels(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(description = "Управление приватными комнатами.")
+    @commands.has_any_role(798228559675916350, 1210305328160309299)
     async def menu(self, inter):
-        # Проверка на присутствие роли бустера
-        premium_role = inter.guild.premium_subscriber_role
-        if not premium_role in inter.author.roles: raise commands.MissingRole(premium_role)
-
         view = disnake.ui.View()
         view.add_item(DropdownPermanentMenu())
         
@@ -165,7 +162,7 @@ class PermanentChannels(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         removed_roles = set(before.roles) - set(after.roles)
-        if before.guild.get_role(798228559675916350) in removed_roles:
+        if before.guild.premium_subscriber_role in removed_roles or before.guild.get_role(1210305328160309299) in removed_roles:
             permquery = self.bot.db_cursor.execute(f"SELECT channel_id FROM permanent_channels WHERE member_id = {before.id}").fetchone()
             if permquery != None:
                 try:
